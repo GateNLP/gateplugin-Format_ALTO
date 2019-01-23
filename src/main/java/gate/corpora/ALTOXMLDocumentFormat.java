@@ -251,30 +251,4 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
       this.end = end;
     }
   }
-
-  public static void main(String args[]) throws Exception {
-    Gate.init();
-
-    Gate.getCreoleRegister()
-        .registerPlugin(new Plugin.Component(ALTOXMLDocumentFormat.class));
-
-    SwingUtilities.invokeAndWait(new Runnable() {
-
-      @Override
-      public void run() {
-        MainFrame.getInstance().setVisible(true);
-      }
-    });
-
-    FeatureMap params = Factory.newFeatureMap();
-    params.put(Document.DOCUMENT_MIME_TYPE_PARAMETER_NAME,
-        "application/xml+alto");
-    params.put(Document.DOCUMENT_URL_PARAMETER_NAME,
-        (new File("000075704_000008.xml")).toURI().toURL());
-
-    Document doc =
-        (Document)Factory.createResource(DocumentImpl.class.getName(), params);
-
-    System.out.println(doc.getContent());
-  }
 }
