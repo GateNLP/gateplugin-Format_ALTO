@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -66,9 +67,9 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
         this);
     // Register the mime type with string
     mimeString2mimeTypeMap.put(mime.getType() + "/" + mime.getSubtype(), mime);
-    
+
     magic2mimeTypeMap.put("<alto", mime);
-    
+
     setMimeType(mime);
 
     return this;
@@ -177,20 +178,21 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
 
             // store the info we will need to annotate the token
             annotations.add(new TempAnnotation("String", content.length(),
-                content.length() + tokenString.length()));
+                content.length() + tokenString.length(), token, "ID", "WC",
+                "CC"));
 
             // append the string to the content
             content.append(tokenString);
           }
 
           // store the info needed to create the annotation for the block
-          annotations.add(
-              new TempAnnotation("TextBlock", blockStart, content.length()));
+          annotations.add(new TempAnnotation("TextBlock", blockStart,
+              content.length(), textBlock, "ID"));
         }
 
         // store the info needed to create the annotation for the page
-        annotations
-            .add(new TempAnnotation("Page", pageStart, content.length()));
+        annotations.add(new TempAnnotation("Page", pageStart, content.length(),
+            page, "ID", "ACCURACY"));
       }
 
       // set the document content to the extracted text
@@ -200,7 +202,7 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
       AnnotationSet originalMarkups = doc.getAnnotations("Original markups");
       for(TempAnnotation annotation : annotations) {
         originalMarkups.add(annotation.start, annotation.end, annotation.type,
-            Factory.newFeatureMap());
+            annotation.features);
       }
 
     } catch(IOException e) {
@@ -230,8 +232,8 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
     super.cleanup();
 
     MimeType mime = getMimeType();
-    
-    //remove the registration but only if it's still regsitered to us
+
+    // remove the registration but only if it's still regsitered to us
     mimeString2ClassHandlerMap.remove(mime.getType() + "/" + mime.getSubtype());
     mimeString2mimeTypeMap.remove(mime.getType() + "/" + mime.getSubtype());
     magic2mimeTypeMap.remove("<alto", mime);
@@ -245,10 +247,21 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
 
     String type;
 
-    public TempAnnotation(String type, long start, long end) {
+    FeatureMap features;
+
+    public TempAnnotation(String type, long start, long end, Element element,
+        String... attributes) {
       this.type = type;
       this.start = start;
       this.end = end;
+
+      features = Factory.newFeatureMap();
+
+      for(int i = 0; i < attributes.length; ++i) {
+        if(element.hasAttribute(attributes[i])) {
+          features.put(attributes[i], element.getAttribute(attributes[i]));
+        }
+      }
     }
   }
 }
