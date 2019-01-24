@@ -152,6 +152,8 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
           // spaces and hyphens etc. which we handle separately
           NodeList tokens = textBlock.getElementsByTagName("String");
 
+          long lineStart = content.length();
+
           for(int t = 0; t < tokens.getLength(); ++t) {
             Element token = (Element)tokens.item(t);
 
@@ -175,6 +177,33 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
             }
 
             if(t > 0) content.append(" ");
+
+            // lets peak and see if there is another token after this one within
+            // the same TextBlock
+            Element nextToken = (Element)tokens.item(t + 1);
+
+            if(nextToken == null
+                || !token.getParentNode().equals(nextToken.getParentNode())) {
+              // a TextLine ends if we've either reached the end of the
+              // TextBlock (i.e. no more tokens) or if the parent of this and
+              // the next token are different. In either case...
+
+              // we store the info for the TextLine using the length of the
+              // original content not any substitution
+              annotations.add(new TempAnnotation("TextLine", lineStart,
+                  content.length() + token.getAttribute("CONTENT").length(),
+                  (Element)token.getParentNode(), "ID"));
+
+              // the next TextLine starts either where we've just finished (i.e.
+              // we were in the middle of a hyphenated line ending) or after
+              // another space which will account for at this point even though
+              // we've not added it to the content yet
+              lineStart =
+                  content.length() + token.getAttribute("CONTENT").length()
+                      + (!tokenString.equals(token.getAttribute("CONTENT"))
+                          ? 0
+                          : 1);
+            }
 
             // store the info we will need to annotate the token
             annotations.add(new TempAnnotation("String", content.length(),
