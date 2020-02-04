@@ -9,16 +9,13 @@
  */
 package gate.corpora;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.SwingUtilities;
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,15 +29,13 @@ import gate.AnnotationSet;
 import gate.Document;
 import gate.Factory;
 import gate.FeatureMap;
-import gate.Gate;
 import gate.GateConstants;
 import gate.Resource;
 import gate.TextualDocument;
-import gate.creole.Plugin;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.metadata.AutoInstance;
 import gate.creole.metadata.CreoleResource;
-import gate.gui.MainFrame;
+import gate.util.BomStrippingInputStreamReader;
 import gate.util.DocumentFormatException;
 import gate.util.InvalidOffsetException;
 import gate.util.Out;
@@ -102,9 +97,8 @@ public class ALTOXMLDocumentFormat extends TextualDocumentFormat {
         }
       } else if(doc instanceof TextualDocument) {
         String encoding = ((TextualDocument)doc).getEncoding();
-        // Don't strip BOM on XML.
-        try (InputStreamReader inputReader =
-            new InputStreamReader(doc.getSourceUrl().openStream(), encoding)) {
+        try (BufferedReader inputReader =
+            new BomStrippingInputStreamReader(doc.getSourceUrl().openStream(), encoding)) {
           altoDocument = dBuilder.parse(new InputSource(inputReader));
         }
 
