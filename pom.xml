@@ -15,7 +15,7 @@
 	<!-- this is the description of this plugin -->
 	<groupId>uk.ac.gate.plugins</groupId>
 	<artifactId>format-alto</artifactId>
-	<version>1.1</version>
+	<version>1.2-SNAPSHOT</version>
 	
 	<name>Format: ALTO</name>
 	<description>Document Format plugin to support reading ALTO XML files</description>
